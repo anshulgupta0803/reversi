@@ -58,28 +58,39 @@ class Client():
 
 
         self.board = Board(int(myColor))
+        gameInitialized = True
         self.gameActive = True
         self.board.printBoard()
-        # while board has empty tiles and legal moves possible:
-        #   get move from user using stdin
-        #   if move is legal:
-        #     send it to server and wait for response
+
         while self.board.filledSquares != 64:
+            # Black makes the first move
+            if gameInitialized and self.board.myColor != BLACK:
+                ij = self.s.recv(1024).decode("ascii")
+                self.board.updateBoard(ij)
+                print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
+                self.board.printBoard()
+                gameInitialized = False
+
+            print("[DEBUG] Valid Moves:", self.board.legalMoves())
             move = input("Your move: ")
-            i, j = self.board.parseMove(move)
-            if i == 100 and j == 100:
+            ij = self.board.validateMove(move)
+            if ij == 100:
                 # Send SIGINT so that the trap handler can handle it
                 os.kill(os.getpid(), signal.SIGINT)
-            elif i == -1 and j == -1:
+            elif ij == -1:
                 print("[WARN] Invalid move")
             else:
-                ij = str(i) + " " + str(j)
+                self.board.updateBoard(ij)
                 self.s.send(ij.encode("ascii"))
-                print("[DEBUG] You chose i:", i, "j:", j)
-                ij = self.s.recv(1024).decode("ascii")
-                i, j = ij.split(" ")
-                print("[DEBUG] Opponent chose i:", i, "j:", j)
+                print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
+                ij = self.s.recv(1024).decode("ascii")
+                self.board.updateBoard(ij)
+                print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
+                self.board.printBoard()
+
+        print("\n[INFO] Fetching final score...")
+        self.board.getFinalScore()
         self.s.close()
 
 def terminate(client, signum, frame):

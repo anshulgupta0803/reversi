@@ -42,8 +42,19 @@ class Serve(threading.Thread):
             myColor = WHITE
 
         self.board = Board(myColor)
+        gameInitialized = True
         self.board.printBoard()
         while self.board.filledSquares != 64:
+            # Black makes the first move
+            if gameInitialized and self.board.myColor == BLACK:
+                validMoves = self.board.legalMoves()
+                ij = validMoves[random.randint(0, len(validMoves) - 1)]
+                self.board.updateBoard(ij)
+                self.connection.send(ij.encode("ascii"))
+                print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
+                self.board.printBoard()
+                gameInitialized = False
+
             ij = self.connection.recv(1024).decode("ascii")
             if ij == "close":
                 print("[INFO] Opponent left")
@@ -51,14 +62,18 @@ class Serve(threading.Thread):
                 self.board.getFinalScore()
                 break
             else:
-                i, j = ij.split(" ")
-                print("[DEBUG] Opponent chose i:", i, "j:", j)
-                i = random.randint(0, 7)
-                j = random.randint(0, 7)
-                ij = str(i) + " " + str(j)
-                self.connection.send(ij.encode("ascii"))
-                print("[DEBUG] You chose i:", i, "j:", j)
+                self.board.updateBoard(ij)
+                print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
+                validMoves = self.board.legalMoves()
+                ij = validMoves[random.randint(0, len(validMoves) - 1)]
+                self.board.updateBoard(ij)
+                self.connection.send(ij.encode("ascii"))
+                print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
+                self.board.printBoard()
+
+        print("\n[INFO] Fetching final score...")
+        self.board.getFinalScore()
         self.connection.close()
 
 class Server():
