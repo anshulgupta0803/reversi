@@ -152,7 +152,7 @@ class Board():
                         else:
                             break
                     for p in range(1, 8):
-                        if i + p <= 7 and j + p <=7:
+                        if i + p <= 7 and j + p <= 7:
                             if self.board[i + p][j + p] == self.opponentColor:
                                 opponentPiecePresent = True
                             if opponentPiecePresent and self.board[i + p][j + p] == EMPTY:
@@ -174,7 +174,7 @@ class Board():
                         else:
                             break
                     for p in range(1, 8):
-                        if i - p >= 0 and j + p <=7:
+                        if i - p >= 0 and j + p <= 7:
                             if self.board[i - p][j + p] == self.opponentColor:
                                 opponentPiecePresent = True
                             if opponentPiecePresent and self.board[i - p][j + p] == EMPTY:
@@ -185,6 +185,125 @@ class Board():
                             break
         return moves
 
-    def updateBoard(self, move):
-        # TODO
-        pass
+    def updateBoard(self, move, color):
+        i = int(move[:1])
+        j = int(move[1:])
+        self.board[i][j] = color
+        self.filledSquares = self.filledSquares + 1
+        self.score[color] = self.score[color] + 1
+
+        # Check for vertical pieces
+        potentialPieces = list()
+        for x in range(i - 1, -1, -1):
+            if self.board[x][j] == 1 - color:
+                potentialPieces.append(str(x) + str(j))
+            elif self.board[x][j] == color:
+                for piece in potentialPieces:
+                    self.board[int(piece[:1])][int(piece[1:])] = color
+                    self.score[color] = self.score[color] + 1
+                    self.score[1 - color] = self.score[1 - color] - 1
+                break
+            elif self.board[x][j] == EMPTY:
+                break
+        potentialPieces = list()
+        for x in range(i + 1, 8):
+            if self.board[x][j] == 1 - color:
+                potentialPieces.append(str(x) + str(j))
+            elif self.board[x][j] == color:
+                for piece in potentialPieces:
+                    self.board[int(piece[:1])][int(piece[1:])] = color
+                    self.score[color] = self.score[color] + 1
+                    self.score[1 - color] = self.score[1 - color] - 1
+                break
+            elif self.board[x][j] == EMPTY:
+                break
+
+        # Check for horizontal pieces
+        potentialPieces = list()
+        for y in range(j - 1, -1, -1):
+            if self.board[i][y] == 1 - color:
+                potentialPieces.append(str(i) + str(y))
+            elif self.board[i][y] == color:
+                for piece in potentialPieces:
+                    self.board[int(piece[:1])][int(piece[1:])] = color
+                    self.score[color] = self.score[color] + 1
+                    self.score[1 - color] = self.score[1 - color] - 1
+                break
+            elif self.board[i][y] == EMPTY:
+                break
+        potentialPieces = list()
+        for y in range(j + 1, 8):
+            if self.board[i][y] == 1 - color:
+                potentialPieces.append(str(i) + str(y))
+            elif self.board[i][y] == color:
+                for piece in potentialPieces:
+                    self.board[int(piece[:1])][int(piece[1:])] = color
+                    self.score[color] = self.score[color] + 1
+                    self.score[1 - color] = self.score[1 - color] - 1
+                break
+            elif self.board[i][y] == EMPTY:
+                break
+
+        # Check for pieces on main diagoanl
+        potentialPieces = list()
+        for p in range(1, 8):
+            if i - p >= 0 and j - p >= 0:
+                if self.board[i - p][j - p] == 1 - color:
+                    potentialPieces.append(str(i - p) + str(j - p))
+                elif self.board[i - p][j - p] == color:
+                    for piece in potentialPieces:
+                        self.board[int(piece[:1])][int(piece[1:])] = color
+                        self.score[color] = self.score[color] + 1
+                        self.score[1 - color] = self.score[1 - color] - 1
+                    break
+                elif self.board[i - p][j - p] == EMPTY:
+                    break
+            else:
+                break
+        potentialPieces = list()
+        for p in range(1, 8):
+            if i + p <= 7 and j + p <= 7:
+                if self.board[i + p][j + p] == 1 - color:
+                    potentialPieces.append(str(i + p) + str(j + p))
+                elif self.board[i + p][j + p] == color:
+                    for piece in potentialPieces:
+                        self.board[int(piece[:1])][int(piece[1:])] = color
+                        self.score[color] = self.score[color] + 1
+                        self.score[1 - color] = self.score[1 - color] - 1
+                    break
+                elif self.board[i + p][j + p] == EMPTY:
+                    break
+            else:
+                break
+
+        # Check for pieces on anti-diagonal
+        potentialPieces = list()
+        for p in range(1, 8):
+            if i + p <= 7 and j - p >= 0:
+                if self.board[i + p][j - p] == 1 - color:
+                    potentialPieces.append(str(i + p) + str(j - p))
+                elif self.board[i + p][j - p] == color:
+                    for piece in potentialPieces:
+                        self.board[int(piece[:1])][int(piece[1:])] = color
+                        self.score[color] = self.score[color] + 1
+                        self.score[1 - color] = self.score[1 - color] - 1
+                    break
+                elif self.board[i + p][j - p] == EMPTY:
+                    break
+            else:
+                break
+        potentialPieces = list()
+        for p in range(1, 8):
+            if i - p >= 0 and j + p <= 7:
+                if self.board[i - p][j + p] == 1 - color:
+                    potentialPieces.append(str(i - p) + str(j + p))
+                elif self.board[i - p][j + p] == color:
+                    for piece in potentialPieces:
+                        self.board[int(piece[:1])][int(piece[1:])] = color
+                        self.score[color] = self.score[color] + 1
+                        self.score[1 - color] = self.score[1 - color] - 1
+                    break
+                elif self.board[i - p][j + p] == EMPTY:
+                    break
+            else:
+                break

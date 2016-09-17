@@ -44,12 +44,13 @@ class Serve(threading.Thread):
         self.board = Board(myColor)
         gameInitialized = True
         self.board.printBoard()
-        while self.board.filledSquares != 64:
+        while not(self.board.isBoardFull()):
             # Black makes the first move
             if gameInitialized and self.board.myColor == BLACK:
                 validMoves = self.board.legalMoves()
+                print("[DEBUG] Valid Moves:", validMoves)
                 ij = validMoves[random.randint(0, len(validMoves) - 1)]
-                self.board.updateBoard(ij)
+                self.board.updateBoard(ij, self.board.myColor)
                 self.connection.send(ij.encode("ascii"))
                 print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
@@ -62,12 +63,12 @@ class Serve(threading.Thread):
                 self.board.getFinalScore()
                 break
             else:
-                self.board.updateBoard(ij)
+                self.board.updateBoard(ij, self.board.opponentColor)
                 print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
                 validMoves = self.board.legalMoves()
                 ij = validMoves[random.randint(0, len(validMoves) - 1)]
-                self.board.updateBoard(ij)
+                self.board.updateBoard(ij, self.board.myColor)
                 self.connection.send(ij.encode("ascii"))
                 print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()

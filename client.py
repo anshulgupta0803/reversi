@@ -62,11 +62,11 @@ class Client():
         self.gameActive = True
         self.board.printBoard()
 
-        while self.board.filledSquares != 64:
+        while not(self.board.isBoardFull()):
             # Black makes the first move
             if gameInitialized and self.board.myColor != BLACK:
                 ij = self.s.recv(1024).decode("ascii")
-                self.board.updateBoard(ij)
+                self.board.updateBoard(ij, self.board.opponentColor)
                 print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
                 gameInitialized = False
@@ -80,12 +80,12 @@ class Client():
             elif ij == -1:
                 print("[WARN] Invalid move")
             else:
-                self.board.updateBoard(ij)
+                self.board.updateBoard(ij, self.board.myColor)
                 self.s.send(ij.encode("ascii"))
                 print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
                 ij = self.s.recv(1024).decode("ascii")
-                self.board.updateBoard(ij)
+                self.board.updateBoard(ij, self.board.opponentColor)
                 print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
                 self.board.printBoard()
 
