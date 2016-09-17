@@ -26,14 +26,26 @@ class Board():
 
     def printBoard(self):
         print("\n[INFO] Current board:")
+        print("  ", end="")
         for i in range(8):
+            print(i, end=" ")
+        print("\n  ", end="")
+        for i in range(8):
+            print("_", end=" ")
+        print("")
+        for i in range(8):
+            print(i, end="|")
             for j in range(8):
                 if self.board[i][j] == WHITE:
-                    print(PIECE[WHITE], end=" ")
+                    print(PIECE[WHITE], end="")
                 elif self.board[i][j] == BLACK:
-                    print(PIECE[BLACK], end=" ")
+                    print(PIECE[BLACK], end="")
                 elif self.board[i][j] == EMPTY:
-                    print(PIECE[EMPTY], end=" ")
+                    print(PIECE[EMPTY], end="")
+                if j == 7:
+                    print("|", end="")
+                else:
+                    print(" ", end="")
                 if i == 2 and j == 7:
                     print("\tScoreboard:", end="")
                 if i == 3 and j == 7:
@@ -47,10 +59,47 @@ class Board():
                         print(" (You)", end="")
                     print(": " + str(self.score[BLACK]), end="")
             print("")
+        print("  ", end="")
+        for i in range(8):
+            print("~", end=" ")
         print("")
+
+    def getFinalScore(self):
+        print("\nScoreboard:")
+        print("White", end="")
+        if self.myColor == WHITE:
+            print(" (You)", end="")
+        print(": " + str(self.score[WHITE]))
+        print("Black", end="")
+        if self.myColor == BLACK:
+            print(" (You)", end="")
+        print(": " + str(self.score[BLACK]))
+        if self.score[self.myColor] > self.score[self.opponentColor]:
+            print("\t\tYou Win!!")
+        elif self.score[self.myColor] < self.score[self.opponentColor]:
+            print("\t\tYou Lost!!")
+        else:
+            print("\t\tIt's a tie!!")
 
     def isBoardFull(self):
         if self.filledSquares == 64:
             return True
         else:
             return False
+
+    def parseMove(self, move):
+        if len(move) == 2:
+            if move == "-1":
+                return 100, 100
+            try:
+                i = int(move[:1])
+                j = int(move[1:])
+            except Exception as e:
+                return -1, -1
+
+            if i >= 0 and i <= 7 and j >= 0 and j <= 7:
+                return i, j
+            else:
+                return -1, -1
+        else:
+            return -1, -1

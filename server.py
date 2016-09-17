@@ -6,6 +6,7 @@ import signal
 import threading
 from functools import partial
 from board import Board
+import random
 
 WHITE = 0
 BLACK = 1
@@ -20,6 +21,7 @@ class Serve(threading.Thread):
         threading.Thread.__init__(self)
         self.connection = connection
         self.address = address
+        self.board = ""
 
     def run(self):
         print("[INFO] Got connection form", self.address)
@@ -39,8 +41,24 @@ class Serve(threading.Thread):
         elif packet[1] == "black":
             myColor = WHITE
 
-        board = Board(myColor)
-        board.printBoard()
+        self.board = Board(myColor)
+        self.board.printBoard()
+        while self.board.filledSquares != 64:
+            ij = self.connection.recv(1024).decode("ascii")
+            if ij == "close":
+                print("[INFO] Opponent left")
+                self.board.printBoard()
+                self.board.getFinalScore()
+                break
+            else:
+                i, j = ij.split(" ")
+                print("[DEBUG] Opponent chose i:", i, "j:", j)
+                i = random.randint(0, 7)
+                j = random.randint(0, 7)
+                ij = str(i) + " " + str(j)
+                self.connection.send(ij.encode("ascii"))
+                print("[DEBUG] You chose i:", i, "j:", j)
+                self.board.printBoard()
         self.connection.close()
 
 class Server():
