@@ -106,12 +106,17 @@ class Board():
 		for i in range(8):
 			for j in range(8):
 				if self.board[i][j] == self.myColor:
-					opponentPiecePresent = False
+
 
 					# Check for vertical moves
+					opponentPiecePresent = False
 					for x in range(i - 1, -1, -1):
-						if self.board[x][j] == self.opponentColor:
+						if not(opponentPiecePresent) and self.board[x][j] == EMPTY:
+							break
+						if not(opponentPiecePresent) and self.board[x][j] == self.opponentColor:
 							opponentPiecePresent = True
+						if self.board[x][j] == self.myColor:
+							break
 						if opponentPiecePresent and self.board[x][j] == EMPTY:
 							try:
 								moves.index(str(x) + str(j))
@@ -119,9 +124,14 @@ class Board():
 								moves.append(str(x) + str(j))
 							opponentPiecePresent = False
 							break
+					opponentPiecePresent = False
 					for x in range(i + 1, 8):
-						if self.board[x][j] == self.opponentColor:
+						if not(opponentPiecePresent) and self.board[x][j] == EMPTY:
+							break
+						if not(opponentPiecePresent) and self.board[x][j] == self.opponentColor:
 							opponentPiecePresent = True
+						if self.board[x][j] == self.myColor:
+							break
 						if opponentPiecePresent and self.board[x][j] == EMPTY:
 							try:
 								moves.index(str(x) + str(j))
@@ -131,9 +141,14 @@ class Board():
 							break
 
 					# Check for horizontal moves
+					opponentPiecePresent = False
 					for y in range(j - 1, -1, -1):
-						if self.board[i][y] == self.opponentColor:
+						if not(opponentPiecePresent) and self.board[i][y] == EMPTY:
+							break
+						if not(opponentPiecePresent) and self.board[i][y] == self.opponentColor:
 							opponentPiecePresent = True
+						if self.board[i][y] == self.myColor:
+							break
 						if opponentPiecePresent and self.board[i][y] == EMPTY:
 							try:
 								moves.index(str(i) + str(y))
@@ -141,9 +156,14 @@ class Board():
 								moves.append(str(i) + str(y))
 							opponentPiecePresent = False
 							break
+					opponentPiecePresent = False
 					for y in range(j + 1, 8):
-						if self.board[i][y] == self.opponentColor:
+						if not(opponentPiecePresent) and self.board[i][y] == EMPTY:
+							break
+						if not(opponentPiecePresent) and self.board[i][y] == self.opponentColor:
 							opponentPiecePresent = True
+						if self.board[i][y] == self.myColor:
+							break
 						if opponentPiecePresent and self.board[i][y] == EMPTY:
 							try:
 								moves.index(str(i) + str(y))
@@ -153,10 +173,15 @@ class Board():
 							break
 
 					# Check for moves on main diagoanl
+					opponentPiecePresent = False
 					for p in range(1, 8):
 						if i - p >= 0 and j - p >= 0:
-							if self.board[i - p][j - p] == self.opponentColor:
+							if not(opponentPiecePresent) and self.board[i - p][j - p] == EMPTY:
+								break
+							if not(opponentPiecePresent) and self.board[i - p][j - p] == self.opponentColor:
 								opponentPiecePresent = True
+							if self.board[i - p][j - p] == self.myColor:
+								break
 							if opponentPiecePresent and self.board[i - p][j - p] == EMPTY:
 								try:
 									moves.index(str(i - p) + str(j - p))
@@ -166,10 +191,15 @@ class Board():
 								break
 						else:
 							break
+					opponentPiecePresent = False
 					for p in range(1, 8):
 						if i + p <= 7 and j + p <= 7:
-							if self.board[i + p][j + p] == self.opponentColor:
+							if not(opponentPiecePresent) and self.board[i + p][j + p] == EMPTY:
+								break
+							if not(opponentPiecePresent) and self.board[i + p][j + p] == self.opponentColor:
 								opponentPiecePresent = True
+							if self.board[i + p][j + p] == self.myColor:
+								break
 							if opponentPiecePresent and self.board[i + p][j + p] == EMPTY:
 								try:
 									moves.index(str(i + p) + str(j + p))
@@ -181,10 +211,15 @@ class Board():
 							break
 
 					# Check for moves on anti-diagonal
+					opponentPiecePresent = False
 					for p in range(1, 8):
 						if i + p <= 7 and j - p >= 0:
-							if self.board[i + p][j - p] == self.opponentColor:
+							if not(opponentPiecePresent) and self.board[i + p][j - p] == EMPTY:
+								break
+							if not(opponentPiecePresent) and self.board[i + p][j - p] == self.opponentColor:
 								opponentPiecePresent = True
+							if self.board[i + p][j - p] == self.myColor:
+								break
 							if opponentPiecePresent and self.board[i + p][j - p] == EMPTY:
 								try:
 									moves.index(str(i + p) + str(j - p))
@@ -194,10 +229,15 @@ class Board():
 								break
 						else:
 							break
+					opponentPiecePresent = False
 					for p in range(1, 8):
 						if i - p >= 0 and j + p <= 7:
-							if self.board[i - p][j + p] == self.opponentColor:
+							if not(opponentPiecePresent) and self.board[i - p][j + p] == EMPTY:
+								break
+							if not(opponentPiecePresent) and self.board[i - p][j + p] == self.opponentColor:
 								opponentPiecePresent = True
+							if self.board[i - p][j + p] == self.myColor:
+								break
 							if opponentPiecePresent and self.board[i - p][j + p] == EMPTY:
 								try:
 									moves.index(str(i - p) + str(j + p))
