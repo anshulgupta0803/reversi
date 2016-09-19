@@ -85,7 +85,7 @@ class Server():
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.host = socket.gethostname()
-		self.port = int(sys.argv[1])
+		self.port = port
 
 	def run(self):
 		try:
@@ -110,7 +110,12 @@ def terminate(server, signum, frame):
 	exit()
 
 def main():
-	server = Server(sys.argv[1])
+	try:
+		port = int(sys.argv[1])
+	except Exception as e:
+		print("[ERROR] Usage:", sys.argv[0], "port")
+		exit()
+	server = Server(port)
 	# Terminates the server gracefully
 	interruptHandler = signal.signal(signal.SIGINT, partial(terminate, server))
 	server.run()

@@ -75,7 +75,7 @@ class Board():
 			print(" (You)", end="")
 		print(": " + str(self.score[BLACK]))
 		if self.score[self.myColor] > self.score[self.opponentColor]:
-			print("\t\tYou Win!!")
+			print("\t\tYou Won!!")
 		elif self.score[self.myColor] < self.score[self.opponentColor]:
 			print("\t\tYou Lost!!")
 		else:

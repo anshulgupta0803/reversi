@@ -36,7 +36,6 @@ class Client():
 		try:
 			self.s.connect((self.host, self.port))
 		except Exception as e:
-			print(e)
 			print("[ERROR] Unable to connect to server")
 			exit()
 
@@ -147,7 +146,13 @@ def terminate(client, signum, frame):
 		pass
 
 def main():
-	client = Client(sys.argv[1], int(sys.argv[2]))
+	try:
+		host = sys.argv[1]
+		port = int(sys.argv[2])
+	except Exception as e:
+		print("[ERROR] Usage:", sys.argv[0], "host port")
+		exit()
+	client = Client(host, port)
 	# Terminates the client gracefully
 	interruptHandler = signal.signal(signal.SIGINT, partial(terminate, client))
 	client.run()
