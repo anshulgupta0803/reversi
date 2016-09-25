@@ -45,7 +45,7 @@ class Client():
 		msg = self.s.recv(1024).decode("ascii")
 		print(msg)
 		# Do a handshake
-		handshakePacket = "1"#input("Roll Number: ")
+		handshakePacket = input("Roll Number: ")
 		self.handshake(handshakePacket)
 
 		# Wait for color message
@@ -79,7 +79,7 @@ class Client():
 		while not(playerTypeChosen):
 			print("1. Human v/s Computer")
 			print("2. Computer v/s Computer")
-			playerType = 2#input("Enter choice: ")
+			playerType = input("Enter choice: ")
 			try:
 				playerType = int(playerType)
 			except Exception as e:
