@@ -15,7 +15,11 @@ EMPTY = 2
 # PIECE[WHITE] = "X"
 # PIECE[BLACK] = "O"
 # PIECE[EMPTY] = "."
-PIECE=["X", "O", "."]
+PIECE = ["X", "O", "."]
+
+EXIT = 100
+INVALID = -10
+PASS = -20
 
 HUMAN = 1
 COMPUTER = 2
@@ -28,8 +32,7 @@ class Client():
 		self.board = ""
 		self.gameActive = False
 
-	def handshake(self, color):
-		handshakePacket = "initiate " + color
+	def handshake(self, handshakePacket):
 		self.s.send(handshakePacket.encode("ascii"))
 
 	def run(self):
@@ -39,16 +42,24 @@ class Client():
 			print("[ERROR] Unable to connect to server")
 			exit()
 
-		# Wait for welcome message and color options
+		msg = self.s.recv(1024).decode("ascii")
+		print(msg)
+		# Do a handshake
+		handshakePacket = "1"#input("Roll Number: ")
+		self.handshake(handshakePacket)
+
+		# Wait for color message
 		msg = self.s.recv(1024)
 		print("[INFO]", msg.decode("ascii"))
 
 		colorChosen = False
 		while not(colorChosen):
-			myColor = input("Enter choice: ")
-
 			try:
-				myColor = int(myColor)
+				color = msg.decode("ascii").split(" ")[1]
+				if color == "WHITE":
+					myColor = WHITE
+				elif color == "BLACK":
+					myColor = BLACK
 			except Exception as e:
 				print("[WARN] Invalid color")
 				continue
@@ -57,12 +68,10 @@ class Client():
 				print("\n[INFO] Your color is White (" + PIECE[WHITE] + ")")
 				print("[INFO] Opponents's color is black (" + PIECE[BLACK] + ")")
 				colorChosen = True
-				self.handshake("white")
 			elif myColor == BLACK:
 				print("\n[INFO] Your color is black (" + PIECE[BLACK] + ")")
 				print("[INFO] Opponents's color is white (" + PIECE[WHITE] + ")")
 				colorChosen = True
-				self.handshake("black")
 			else:
 				print("[WARN] Invalid color")
 
@@ -70,7 +79,7 @@ class Client():
 		while not(playerTypeChosen):
 			print("1. Human v/s Computer")
 			print("2. Computer v/s Computer")
-			playerType = input("Enter choice: ")
+			playerType = 2#input("Enter choice: ")
 			try:
 				playerType = int(playerType)
 			except Exception as e:
@@ -90,41 +99,54 @@ class Client():
 		gameInitialized = True
 		self.gameActive = True
 		self.board.printBoard()
+		opponentPassed = False
 
 		validMoves = self.board.legalMoves()
-		while not(self.board.isBoardFull()) and len(validMoves) > 0:
+		while not(self.board.isBoardFull() or (opponentPassed and len(validMoves) == 0)):
 			# Black makes the first move
-			if gameInitialized and self.board.myColor != BLACK:
+			if gameInitialized and self.board.myColor == BLACK:
 				ij = self.s.recv(1024).decode("ascii")
 				self.board.updateBoard(ij, self.board.opponentColor)
-				print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
+				print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
 				self.board.printBoard()
-
-			if gameInitialized:
 				validMoves = self.board.legalMoves()
 				gameInitialized = False
-			print("[DEBUG] Valid Moves:", validMoves)
-			if playerType == HUMAN:
-				move = input("Your move: ")
-			elif playerType == COMPUTER:
-				move = validMoves[random.randint(0, len(validMoves) - 1)]
+
+			if (len(validMoves) == 0):
+				move = str(PASS)
+			else:
+				if opponentPassed:
+					opponentPassed = False
+				print("[DEBUG] Valid Moves:", validMoves)
+				if playerType == HUMAN:
+					move = input("Your move (100 to exit): ")
+				elif playerType == COMPUTER:
+					move = validMoves[random.randint(0, len(validMoves) - 1)]
 			ij = self.board.validateMove(move)
-			if ij == 100:
+			if ij == EXIT:
 				# Send SIGINT so that the trap handler can handle it
 				os.kill(os.getpid(), signal.SIGINT)
-			elif ij == -1:
+			elif ij == INVALID:
 				print("[WARN] Invalid move")
 			else:
-				self.board.updateBoard(ij, self.board.myColor)
-				self.s.send(ij.encode("ascii"))
-				print("[DEBUG] You chose i:", ij[:1], "j:", ij[1:])
-				self.board.printBoard()
-				if self.board.isBoardFull():
-					break
+				if ij != PASS:
+					self.board.updateBoard(ij, self.board.myColor)
+					self.s.send(ij.encode("ascii"))
+					print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
+					self.board.printBoard()
+					if self.board.isBoardFull():
+						break
+				else:
+					print("[INFO] No valid moves remaining. Passing the turn")
+					self.s.send(str(ij).encode("ascii"))
 				ij = self.s.recv(1024).decode("ascii")
-				self.board.updateBoard(ij, self.board.opponentColor)
-				print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[1:])
-				self.board.printBoard()
+				if ij != str(PASS):
+					self.board.updateBoard(ij, self.board.opponentColor)
+					print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
+					self.board.printBoard()
+				else:
+					opponentPassed = True
+					print("[INFO] Opponent passed")
 			validMoves = self.board.legalMoves()
 
 		print("\n[INFO] Fetching final score...")

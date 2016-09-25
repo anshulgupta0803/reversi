@@ -6,7 +6,11 @@ EMPTY = 2
 # PIECE[WHITE] = "X"
 # PIECE[BLACK] = "O"
 # PIECE[EMPTY] = "."
-PIECE=["X", "O", "."]
+PIECE = ["X", "O", "."]
+
+EXIT = 100
+INVALID = -10
+PASS = -20
 
 class Board():
 	def __init__(self, myColor):
@@ -88,18 +92,19 @@ class Board():
 			return False
 
 	def validateMove(self, move):
-		if len(move) == 2:
-			if move == "-1":
-				return 100
-
+		if len(move) == 3:
+			if move == str(EXIT):
+				return EXIT
+			if move == str(PASS):
+				return PASS
 			validMoves = self.legalMoves()
 			try:
 				validMoves.index(move)
 				return move
 			except Exception as e:
-				return -1
+				return INVALID
 		else:
-			return -1
+			return INVALID
 
 	def legalMoves(self):
 		moves = list()
@@ -119,9 +124,9 @@ class Board():
 							break
 						if opponentPiecePresent and self.board[x][j] == EMPTY:
 							try:
-								moves.index(str(x) + str(j))
+								moves.index(str(x) + " " + str(j))
 							except Exception as e:
-								moves.append(str(x) + str(j))
+								moves.append(str(x) + " " + str(j))
 							opponentPiecePresent = False
 							break
 					opponentPiecePresent = False
@@ -134,9 +139,9 @@ class Board():
 							break
 						if opponentPiecePresent and self.board[x][j] == EMPTY:
 							try:
-								moves.index(str(x) + str(j))
+								moves.index(str(x) + " " + str(j))
 							except Exception as e:
-								moves.append(str(x) + str(j))
+								moves.append(str(x) + " " + str(j))
 							opponentPiecePresent = False
 							break
 
@@ -151,9 +156,9 @@ class Board():
 							break
 						if opponentPiecePresent and self.board[i][y] == EMPTY:
 							try:
-								moves.index(str(i) + str(y))
+								moves.index(str(i) + " " + str(y))
 							except Exception as e:
-								moves.append(str(i) + str(y))
+								moves.append(str(i) + " " + str(y))
 							opponentPiecePresent = False
 							break
 					opponentPiecePresent = False
@@ -166,9 +171,9 @@ class Board():
 							break
 						if opponentPiecePresent and self.board[i][y] == EMPTY:
 							try:
-								moves.index(str(i) + str(y))
+								moves.index(str(i) + " " + str(y))
 							except Exception as e:
-								moves.append(str(i) + str(y))
+								moves.append(str(i) + " " + str(y))
 							opponentPiecePresent = False
 							break
 
@@ -184,9 +189,9 @@ class Board():
 								break
 							if opponentPiecePresent and self.board[i - p][j - p] == EMPTY:
 								try:
-									moves.index(str(i - p) + str(j - p))
+									moves.index(str(i - p) + " " + str(j - p))
 								except Exception as e:
-									moves.append(str(i - p) + str(j - p))
+									moves.append(str(i - p) + " " + str(j - p))
 								opponentPiecePresent = False
 								break
 						else:
@@ -202,9 +207,9 @@ class Board():
 								break
 							if opponentPiecePresent and self.board[i + p][j + p] == EMPTY:
 								try:
-									moves.index(str(i + p) + str(j + p))
+									moves.index(str(i + p) + " " + str(j + p))
 								except Exception as e:
-									moves.append(str(i + p) + str(j + p))
+									moves.append(str(i + p) + " " + str(j + p))
 								opponentPiecePresent = False
 								break
 						else:
@@ -222,9 +227,9 @@ class Board():
 								break
 							if opponentPiecePresent and self.board[i + p][j - p] == EMPTY:
 								try:
-									moves.index(str(i + p) + str(j - p))
+									moves.index(str(i + p) + " " + str(j - p))
 								except Exception as e:
-									moves.append(str(i + p) + str(j - p))
+									moves.append(str(i + p) + " " + str(j - p))
 								opponentPiecePresent = False
 								break
 						else:
@@ -240,9 +245,9 @@ class Board():
 								break
 							if opponentPiecePresent and self.board[i - p][j + p] == EMPTY:
 								try:
-									moves.index(str(i - p) + str(j + p))
+									moves.index(str(i - p) + " " + str(j + p))
 								except Exception as e:
-									moves.append(str(i - p) + str(j + p))
+									moves.append(str(i - p) + " " + str(j + p))
 								opponentPiecePresent = False
 								break
 						else:
@@ -251,7 +256,7 @@ class Board():
 
 	def updateBoard(self, move, color):
 		i = int(move[:1])
-		j = int(move[1:])
+		j = int(move[2:])
 		self.board[i][j] = color
 		self.filledSquares = self.filledSquares + 1
 		self.score[color] = self.score[color] + 1
