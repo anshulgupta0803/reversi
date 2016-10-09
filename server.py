@@ -32,7 +32,7 @@ class Serve(threading.Thread):
 
 		# Send acknowledgement for connecting
 		msg="Welcome to Reversi\n\n"
-		self.connection.send(msg.encode("ascii"))
+		# self.connection.send(msg.encode("ascii"))
 
 		# Wait for handshake packet
 		handshakePacket = self.connection.recv(1024).decode("ascii")
@@ -69,6 +69,7 @@ class Serve(threading.Thread):
 				self.board.getFinalScore()
 				break
 			else:
+				ij = ij.strip("\n")
 				if ij == str(PASS):
 					opponentPassed = True
 					print("[INFO] Opponent passed")

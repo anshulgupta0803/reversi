@@ -8,6 +8,7 @@ import time
 from board import Board
 import os
 import random
+from ai import AI
 
 WHITE = 0
 BLACK = 1
@@ -42,10 +43,11 @@ class Client():
 			print("[ERROR] Unable to connect to server")
 			exit()
 
-		msg = self.s.recv(1024).decode("ascii")
-		print(msg)
+		# msg = self.s.recv(1024).decode("ascii")
+		# print(msg)
 		# Do a handshake
 		handshakePacket = input("Roll Number: ")
+		handshakePacket = handshakePacket + "\n"
 		self.handshake(handshakePacket)
 
 		# Wait for color message
@@ -55,7 +57,7 @@ class Client():
 		colorChosen = False
 		while not(colorChosen):
 			try:
-				color = msg.decode("ascii").split(" ")[1]
+				color = msg.decode("ascii").strip("\n").split(" ")[1]
 				if color == "WHITE":
 					myColor = WHITE
 				elif color == "BLACK":
@@ -66,11 +68,11 @@ class Client():
 
 			if myColor == WHITE:
 				print("\n[INFO] Your color is White (" + PIECE[WHITE] + ")")
-				print("[INFO] Opponents's color is black (" + PIECE[BLACK] + ")")
+				print("[INFO] Opponents's color is Black (" + PIECE[BLACK] + ")")
 				colorChosen = True
 			elif myColor == BLACK:
-				print("\n[INFO] Your color is black (" + PIECE[BLACK] + ")")
-				print("[INFO] Opponents's color is white (" + PIECE[WHITE] + ")")
+				print("\n[INFO] Your color is Black (" + PIECE[BLACK] + ")")
+				print("[INFO] Opponents's color is White (" + PIECE[WHITE] + ")")
 				colorChosen = True
 			else:
 				print("[WARN] Invalid color")
@@ -131,6 +133,7 @@ class Client():
 			else:
 				if ij != PASS:
 					self.board.updateBoard(ij, self.board.myColor)
+					ij = ij + "\n"
 					self.s.send(ij.encode("ascii"))
 					print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
 					self.board.printBoard()
@@ -138,6 +141,7 @@ class Client():
 						break
 				else:
 					print("[INFO] No valid moves remaining. Passing the turn")
+					ij = str(ij) + "\n"
 					self.s.send(str(ij).encode("ascii"))
 				ij = self.s.recv(1024).decode("ascii")
 				if ij != str(PASS):
