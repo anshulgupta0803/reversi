@@ -112,7 +112,6 @@ class Board():
 			for j in range(8):
 				if self.board[i][j] == self.myColor:
 
-
 					# Check for vertical moves
 					opponentPiecePresent = False
 					for x in range(i - 1, -1, -1):
@@ -376,3 +375,8 @@ class Board():
 					break
 			else:
 				break
+
+	def setState(self, board):
+		for i in range(0, 8):
+			for j in range(0, 8):
+				self.board[i][j] = board[i][j]

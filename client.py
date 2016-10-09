@@ -46,11 +46,13 @@ class Client():
 		# msg = self.s.recv(1024).decode("ascii")
 		# print(msg)
 		# Do a handshake
+		print("[INFO] Sending handshake packet")
 		handshakePacket = input("Roll Number: ")
 		handshakePacket = handshakePacket + "\n"
 		self.handshake(handshakePacket)
 
 		# Wait for color message
+		print("[INFO] Waiting for color message")
 		msg = self.s.recv(1024)
 		print("[INFO]", msg.decode("ascii"))
 
@@ -67,11 +69,11 @@ class Client():
 				continue
 
 			if myColor == WHITE:
-				print("\n[INFO] Your color is White (" + PIECE[WHITE] + ")")
+				print("[INFO] Your color is White (" + PIECE[WHITE] + ")")
 				print("[INFO] Opponents's color is Black (" + PIECE[BLACK] + ")")
 				colorChosen = True
 			elif myColor == BLACK:
-				print("\n[INFO] Your color is Black (" + PIECE[BLACK] + ")")
+				print("[INFO] Your color is Black (" + PIECE[BLACK] + ")")
 				print("[INFO] Opponents's color is White (" + PIECE[WHITE] + ")")
 				colorChosen = True
 			else:
@@ -123,6 +125,8 @@ class Client():
 				if playerType == HUMAN:
 					move = input("Your move (100 to exit): ")
 				elif playerType == COMPUTER:
+					brain = AI(self.board)
+					brain.run()
 					move = validMoves[random.randint(0, len(validMoves) - 1)]
 			ij = self.board.validateMove(move)
 			if ij == EXIT:
