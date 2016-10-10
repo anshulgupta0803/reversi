@@ -126,8 +126,8 @@ class Client():
 					move = input("Your move (100 to exit): ")
 				elif playerType == COMPUTER:
 					brain = AI(self.board)
-					brain.run()
-					move = validMoves[random.randint(0, len(validMoves) - 1)]
+					move = brain.run()
+					# move = validMoves[random.randint(0, len(validMoves) - 1)]
 			ij = self.board.validateMove(move)
 			if ij == EXIT:
 				# Send SIGINT so that the trap handler can handle it

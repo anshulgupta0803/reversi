@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from board import Board
+import random
 
 class AI():
 	def __init__(self, currentBoard, depth=4):
@@ -10,25 +11,28 @@ class AI():
 		self.tree["NEXTSTATE"] = []
 		self.tree["LEVEL"] = 0
 		self.depth = depth
-		self.queue = [self.tree]
-		self.queue1 = [self.tree]
+		self.infinity = 1e50
 
 	def getEmptyNode(self):
 		tree = {
 			"BOARD": None,
 			"MOVE": None,
 			"NEXTSTATE": None,
-			"LEVEL": None
+			"LEVEL": None,
+			"BESTCHILD": None
 		}
 		return tree
 
 	def run(self):
 		self.createTree()
 		# self.printTree()
+		self.minimax(self.tree, self.depth, self.tree["BOARD"].myColor)
+		return self.tree["BESTCHILD"]["MOVE"]
 
 	def createTree(self):
-		while (len(self.queue) != 0):
-			currentNode = self.queue.pop(0)
+		queue = [self.tree]
+		while (len(queue) != 0):
+			currentNode = queue.pop(0)
 			if (currentNode["LEVEL"] > self.depth):
 				break;
 
@@ -61,12 +65,36 @@ class AI():
 				newNode["LEVEL"] = currentNode["LEVEL"] + 1
 
 				currentNode["NEXTSTATE"].append(newNode)
-				self.queue.append(newNode)
+				queue.append(newNode)
+
+	def minimax(self, node, depth, player):
+		if depth == 0 or node["NEXTSTATE"] == None:
+			return self.heuristicValue(node)
+
+		if (player == self.tree["BOARD"].myColor):
+			bestValue = -1 * self.infinity
+			for child in node["NEXTSTATE"]:
+				v = self.minimax(child, depth - 1, 1 - player)
+				if (bestValue < v):
+					bestValue = v
+					node["BESTCHILD"] = child
+		else:
+			bestValue = self.infinity
+			for child in node["NEXTSTATE"]:
+				v = self.minimax(child, depth - 1, 1 - player)
+				if (bestValue > v):
+					bestValue = v
+					node["BESTCHILD"] = child
+		return bestValue
+
+	def heuristicValue(self, node):
+		return 0
 
 	def printTree(self):
-		while (len(self.queue1) != 0):
-			currentNode = self.queue1.pop(0)
+		queue = [self.tree]
+		while (len(queue) != 0):
+			currentNode = queue.pop(0)
 			if (currentNode["BOARD"] != None):
 				print("LEVEL:", currentNode["LEVEL"])
 				currentNode["BOARD"].printBoard()
-				self.queue1.extend(currentNode["NEXTSTATE"])
+				queue.extend(currentNode["NEXTSTATE"])
