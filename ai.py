@@ -9,63 +9,56 @@ class AI():
 		self.tree["BOARD"] = currentBoard
 		self.tree["MOVE"] = None
 		self.tree["NEXTSTATE"] = []
-		self.tree["LEVEL"] = 0
 		self.depth = depth
 		self.infinity = 1e50
+		self.bestMove = None
+		self.createTree(self.tree, level=0)
 
 	def getEmptyNode(self):
 		tree = {
 			"BOARD": None,
 			"MOVE": None,
-			"NEXTSTATE": None,
-			"LEVEL": None,
+			"NEXTSTATE": list(),
+			"LASTLEVELNODES": list(),
 			"BESTCHILD": None
 		}
 		return tree
 
-	def run(self):
-		self.createTree()
-		# self.printTree()
-		self.minimax(self.tree, self.depth, self.tree["BOARD"].myColor)
-		return self.tree["BESTCHILD"]["MOVE"]
+	def createTree(self, root, level):
+		if (root == None or level > self.depth):
+			return
 
-	def createTree(self):
-		queue = [self.tree]
-		while (len(queue) != 0):
-			currentNode = queue.pop(0)
-			if (currentNode["LEVEL"] > self.depth):
-				break;
+		try:
+			validMoves = root["BOARD"].legalMoves()
+		except Exception as e:
+			return
 
-			try:
-				validMoves = currentNode["BOARD"].legalMoves()
-			except Exception as e:
-				continue
+		if (len(validMoves) == 0):
+			return
 
-			if (len(validMoves) == 0):
-				continue
+		for move in validMoves:
+			newNode = self.getEmptyNode()
 
-			for move in validMoves:
-				newNode = self.getEmptyNode()
+			if (level < self.depth):
+				clonedBoard = Board(root["BOARD"].myColor)
+				clonedBoard.score[0] = root["BOARD"].score[0]
+				clonedBoard.score[1] = root["BOARD"].score[1]
+				clonedBoard.filledSquares = root["BOARD"].filledSquares
+				clonedBoard.setState(root["BOARD"].board)
+				clonedBoard.updateBoard(move, root["BOARD"].myColor)
+				clonedBoard.myColor = 1 - root["BOARD"].myColor
+				clonedBoard.opponentColor = root["BOARD"].myColor
+			elif (level == self.depth):
+				clonedBoard = None
 
-				if (currentNode["LEVEL"] < self.depth):
-					clonedBoard = Board(currentNode["BOARD"].myColor)
-					clonedBoard.score[0] = currentNode["BOARD"].score[0]
-					clonedBoard.score[1] = currentNode["BOARD"].score[1]
-					clonedBoard.filledSquares = currentNode["BOARD"].filledSquares
-					clonedBoard.setState(currentNode["BOARD"].board)
-					clonedBoard.updateBoard(move, currentNode["BOARD"].myColor)
-					clonedBoard.myColor = 1 - currentNode["BOARD"].myColor
-					clonedBoard.opponentColor = currentNode["BOARD"].myColor
-				else:
-					clonedBoard = None
+			newNode["BOARD"] = clonedBoard
+			newNode["MOVE"] = move
 
-				newNode["BOARD"] = clonedBoard
-				newNode["MOVE"] = move
-				newNode["NEXTSTATE"] = []
-				newNode["LEVEL"] = currentNode["LEVEL"] + 1
+			root["NEXTSTATE"].append(newNode)
+			if (level == self.depth):
+				self.tree["LASTLEVELNODES"].append(newNode)
 
-				currentNode["NEXTSTATE"].append(newNode)
-				queue.append(newNode)
+			self.createTree(newNode, level + 1)
 
 	def minimax(self, node, depth, player):
 		if depth == 0 or node["NEXTSTATE"] == None:
@@ -88,13 +81,21 @@ class AI():
 		return bestValue
 
 	def heuristicValue(self, node):
-		return 0
+		return random.randint(-100, 100)
+
+	def think(self):
+		self.minimax(self.tree, self.depth, self.tree["BOARD"].myColor)
+		self.tree = self.tree["BESTCHILD"]
+		print(self.tree["LASTLEVELNODES"])
+		self.bestMove = self.tree["MOVE"]
+
+	def getMove(self):
+		return self.bestMove
 
 	def printTree(self):
 		queue = [self.tree]
 		while (len(queue) != 0):
 			currentNode = queue.pop(0)
 			if (currentNode["BOARD"] != None):
-				print("LEVEL:", currentNode["LEVEL"])
 				currentNode["BOARD"].printBoard()
 				queue.extend(currentNode["NEXTSTATE"])

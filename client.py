@@ -105,11 +105,14 @@ class Client():
 		self.board.printBoard()
 		opponentPassed = False
 
+		brain = AI(self.board)
+
 		validMoves = self.board.legalMoves()
 		while not(self.board.isBoardFull() or (opponentPassed and len(validMoves) == 0)):
 			# Black makes the first move
 			if gameInitialized and self.board.myColor == BLACK:
 				ij = self.s.recv(1024).decode("ascii")
+				ij = self.board.validateMove(ij)
 				self.board.updateBoard(ij, self.board.opponentColor)
 				print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
 				self.board.printBoard()
@@ -122,18 +125,21 @@ class Client():
 				if opponentPassed:
 					opponentPassed = False
 				print("[DEBUG] Valid Moves:", validMoves)
+
 				if playerType == HUMAN:
 					move = input("Your move (100 to exit): ")
 				elif playerType == COMPUTER:
-					brain = AI(self.board)
-					move = brain.run()
-					# move = validMoves[random.randint(0, len(validMoves) - 1)]
+					brain.think()
+					move = brain.getMove()
+
 			ij = self.board.validateMove(move)
+
 			if ij == EXIT:
 				# Send SIGINT so that the trap handler can handle it
 				os.kill(os.getpid(), signal.SIGINT)
 			elif ij == INVALID:
 				print("[WARN] Invalid move")
+				continue
 			else:
 				if ij != PASS:
 					self.board.updateBoard(ij, self.board.myColor)
