@@ -108,15 +108,6 @@ class AI():
 		for lastLevelNode in self.tree["LASTLEVELNODES"]:
 			self.createTree(lastLevelNode, 2)
 
-	def test(self):
-		validMoves = self.tree["BOARD"].legalMoves()
-		x = len(validMoves)
-		y = 0
-		for childNode in self.tree["NEXTSTATE"]:
-			y += len(childNode["BOARD"].legalMoves())
-		print ("Expected Last Level Nodes: ", x * y)
-		print ("Actual Last Level Nodes:", len(self.tree["LASTLEVELNODES"]))
-
 	def getMove(self):
 		return self.bestMove
 
