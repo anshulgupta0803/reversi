@@ -119,7 +119,7 @@ class Client():
 				brain = AI(self.board)
 				gameInitialized = False
 
-			if (len(validMoves) == 0):
+			if len(validMoves) == 0:
 				move = str(PASS)
 			else:
 				if opponentPassed:
@@ -130,6 +130,9 @@ class Client():
 					move = input("Your move (100 to exit): ")
 				elif playerType == COMPUTER:
 					print("[INFO] Thinking")
+					print("[INFO] Creating Tree")
+					brain = AI(self.board)
+					print("[INFO] Minimax")
 					brain.think()
 					move = brain.getMove()
 
@@ -156,11 +159,12 @@ class Client():
 					ij = str(ij) + "\n"
 					self.s.send(str(ij).encode("ascii"))
 				ij = self.s.recv(1024).decode("ascii")
-				print("[INFO] Observing opponent's move")
-				brain.observe(ij)
+
 				if ij != str(PASS):
 					self.board.updateBoard(ij, self.board.opponentColor)
 					print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
+					print("[INFO] Observing opponent's move")
+					# brain.observe(ij)
 					self.board.printBoard()
 				else:
 					opponentPassed = True
