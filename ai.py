@@ -2,11 +2,19 @@
 
 from board import Board
 import gc	# For garbage collection
-import random
+import threading
 
 WHITE = 0
 BLACK = 1
 EMPTY = 2
+# PIECE[WHITE] = "⚪"
+# PIECE[BLACK] = "⏺"
+# PIECE[EMPTY] = "∙"
+PIECE = [u"\u26AA", u"\u23FA", u"\u2219"]
+
+EXIT = 100
+INVALID = -10
+PASS = -20
 
 class AI():
 	def __init__(self, currentBoard, depth=4):
@@ -16,7 +24,7 @@ class AI():
 		self.infinity = 1e50
 		self.bestMove = None
 		# To store the LASTLEVELNODES for this node
-		self.secondLevelParent = None
+		#self.secondLevelParent = None
 		self.count = 0
 		self.createTree(self.tree, level=0)
 		gc.enable()
@@ -46,9 +54,10 @@ class AI():
 		#print("LEVEL:", level)
 		if level == 2:
 			#print("Added", self.count, "nodes in last level nodes for move", root["MOVE"])
-			self.secondLevelParent = root
+			#self.secondLevelParent = root
 			self.count = 0
 
+		threads = list()
 		for move in validMoves:
 			newNode = self.getEmptyNode()
 
@@ -70,9 +79,15 @@ class AI():
 			root["NEXTSTATE"].append(newNode)
 			if level == self.depth:
 				self.count += 1
-				self.secondLevelParent["LASTLEVELNODES"].append(newNode)
+				#self.secondLevelParent["LASTLEVELNODES"].append(newNode)
 
 			self.createTree(newNode, level + 1)
+			'''thread = threading.Thread(target=self.createTree, args=(newNode, level + 1))
+			thread.start()
+			threads.append(thread)
+
+		for thread in threads:
+			thread.join()'''
 
 	def minimax(self, node, depth, player, alpha, beta):
 		if depth == 0 or node["NEXTSTATE"] == None:
@@ -278,7 +293,12 @@ class AI():
 
 	def think(self):
 		self.minimax(self.tree, self.depth, self.tree["BOARD"].myColor, -1 * self.infinity, self.infinity)
-		self.bestMove = self.tree["BESTCHILD"]["MOVE"]
+		try:
+			self.bestMove = self.tree["BESTCHILD"]["MOVE"]
+		except Exception as e:
+			print("Best Child is None")
+			self.bestMove = self.tree["BOARD"].legalMoves()[0]
+
 		self.tree = self.tree["BESTCHILD"]
 
 	def observe(self, opponentMove):

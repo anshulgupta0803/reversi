@@ -7,14 +7,15 @@ import threading
 from functools import partial
 from board import Board
 import random
+from ai import AI
 
 WHITE = 0
 BLACK = 1
 EMPTY = 2
-# PIECE[WHITE] = "X"
-# PIECE[BLACK] = "O"
-# PIECE[EMPTY] = "."
-PIECE = ["X", "O", "."]
+# PIECE[WHITE] = "⚪"
+# PIECE[BLACK] = "⏺"
+# PIECE[EMPTY] = "∙"
+PIECE = [u"\u26AA", u"\u23FA", u"\u2219"]
 
 EXIT = 100
 INVALID = -10
@@ -49,19 +50,30 @@ class Serve(threading.Thread):
 		gameInitialized = True
 		self.board.printBoard()
 		validMoves = self.board.legalMoves()
-		print(validMoves)
+		#print(validMoves)
 		opponentPassed = False
+		intelligence = input("Intelligence [1-4]: ")
+		try:
+			intelligence = int(intelligence)
+			if intelligence < 1 or intelligence > 4:
+				raise Exception
+		except Exception as e:
+			print("[WARN] Invalid value for intelligence")
+			print("[WARN] Choosing lowest intelligence")
+			intelligence = 1
+
 		while not(self.board.isBoardFull() or (opponentPassed and len(validMoves) == 0)):
 			# Black makes the first move
 			if gameInitialized and self.board.myColor != BLACK:
-				print("[DEBUG] Valid Moves:", validMoves)
+				#print("[DEBUG] Valid Moves:", validMoves)
 				ij = validMoves[random.randint(0, len(validMoves) - 1)]
 				self.board.updateBoard(ij, self.board.myColor)
 				self.connection.send(ij.encode("ascii"))
-				print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
+				#print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
 				self.board.printBoard()
 				gameInitialized = False
 
+			print("[INFO] Waiting for opponent")
 			ij = self.connection.recv(1024).decode("ascii")
 			if ij == "close":
 				print("[INFO] Opponent left")
@@ -75,7 +87,7 @@ class Serve(threading.Thread):
 					print("[INFO] Opponent passed")
 				else:
 					self.board.updateBoard(ij, self.board.opponentColor)
-					print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
+					#print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
 					self.board.printBoard()
 				validMoves = self.board.legalMoves()
 				if self.board.isBoardFull() or (opponentPassed and len(validMoves) == 0):
@@ -88,11 +100,18 @@ class Serve(threading.Thread):
 				if len(validMoves) > 0:
 					if opponentPassed:
 						opponentPassed = False
-					print("[DEBUG] Valid Moves:", validMoves)
-					ij = validMoves[random.randint(0, len(validMoves) - 1)]
-					self.board.updateBoard(ij, self.board.myColor)
+					#print("[DEBUG] Valid Moves:", validMoves)
+					#ij = validMoves[random.randint(0, len(validMoves) - 1)]
+					print("[INFO] Thinking")
+					print("[INFO] Creating Tree")
+					brain = AI(self.board, intelligence)
+					print("[INFO] Minimax")
+					brain.think()
+					ij = brain.getMove()
+					if ij != str(PASS):
+						self.board.updateBoard(ij, self.board.myColor)
 					self.connection.send(ij.encode("ascii"))
-					print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
+					#print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
 					self.board.printBoard()
 
 		print("\n[INFO] Fetching final score...")
@@ -100,10 +119,10 @@ class Serve(threading.Thread):
 		self.connection.close()
 
 class Server():
-	def __init__(self, port):
+	def __init__(self, host, port):
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.host = socket.gethostname()
+		self.host = host
 		self.port = port
 
 	def run(self):
@@ -130,11 +149,12 @@ def terminate(server, signum, frame):
 
 def main():
 	try:
-		port = int(sys.argv[1])
+		host = sys.argv[1]
+		port = int(sys.argv[2])
 	except Exception as e:
-		print("[ERROR] Usage:", sys.argv[0], "port")
+		print("[ERROR] Usage:", sys.argv[0], "IP", "PORT")
 		exit()
-	server = Server(port)
+	server = Server(host, port)
 	# Terminates the server gracefully
 	interruptHandler = signal.signal(signal.SIGINT, partial(terminate, server))
 	server.run()

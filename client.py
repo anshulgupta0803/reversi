@@ -13,10 +13,10 @@ from ai import AI
 WHITE = 0
 BLACK = 1
 EMPTY = 2
-# PIECE[WHITE] = "X"
-# PIECE[BLACK] = "O"
-# PIECE[EMPTY] = "."
-PIECE = ["X", "O", "."]
+# PIECE[WHITE] = "⚪"
+# PIECE[BLACK] = "⏺"
+# PIECE[EMPTY] = "∙"
+PIECE = [u"\u26AA", u"\u23FA", u"\u2219"]
 
 EXIT = 100
 INVALID = -10
@@ -47,7 +47,7 @@ class Client():
 		# print(msg)
 		# Do a handshake
 		print("[INFO] Sending handshake packet")
-		handshakePacket = input("Roll Number: ")
+		handshakePacket = input("Enter your Handle: ")
 		handshakePacket = handshakePacket + "\n"
 		self.handshake(handshakePacket)
 
@@ -95,6 +95,15 @@ class Client():
 				playerTypeChosen = True
 			elif playerType == COMPUTER:
 				print("[INFO] Computer v/s Computer")
+				intelligence = input("Intelligence [1-4]: ")
+				try:
+					intelligence = int(intelligence)
+					if intelligence < 1 or intelligence > 4:
+						raise Exception
+				except Exception as e:
+					print("[WARN] Invalid value for intelligence")
+					print("[WARN] Choosing lowest intelligence")
+					intelligence = 1
 				playerTypeChosen = True
 			else:
 				print("[WARN] Invalid player type")
@@ -109,14 +118,16 @@ class Client():
 		while not(self.board.isBoardFull() or (opponentPassed and len(validMoves) == 0)):
 			# White makes the first move
 			if gameInitialized and self.board.myColor == BLACK:
+				print("[INFO] Waiting for opponent")
+				#x=input("Press Enter")
 				ij = self.s.recv(1024).decode("ascii")
 				self.board.updateBoard(ij, self.board.opponentColor)
-				print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
+				#print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
 				self.board.printBoard()
 				validMoves = self.board.legalMoves()
 
-			if gameInitialized:
-				brain = AI(self.board)
+			if gameInitialized and playerType == COMPUTER:
+				brain = AI(self.board, intelligence)
 				gameInitialized = False
 
 			if len(validMoves) == 0:
@@ -124,14 +135,14 @@ class Client():
 			else:
 				if opponentPassed:
 					opponentPassed = False
-				print("[DEBUG] Valid Moves:", validMoves)
 
 				if playerType == HUMAN:
+					print("[DEBUG] Valid Moves:", validMoves)
 					move = input("Your move (100 to exit): ")
 				elif playerType == COMPUTER:
 					print("[INFO] Thinking")
 					print("[INFO] Creating Tree")
-					brain = AI(self.board)
+					brain = AI(self.board, intelligence)
 					print("[INFO] Minimax")
 					brain.think()
 					move = brain.getMove()
@@ -142,15 +153,15 @@ class Client():
 				# Send SIGINT so that the trap handler can handle it
 				os.kill(os.getpid(), signal.SIGINT)
 			elif ij == INVALID:
-				print("[WARN] Invalid move")
-				print("Wrong Move:", move)
+				#print("[WARN] Invalid move")
+				#print("Wrong Move:", move)
 				continue
 			else:
 				if ij != PASS:
 					self.board.updateBoard(ij, self.board.myColor)
 					ij = ij + "\n"
 					self.s.send(ij.encode("ascii"))
-					print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
+					#print("[DEBUG] You chose i:", ij[:1], "j:", ij[2:])
 					self.board.printBoard()
 					if self.board.isBoardFull():
 						break
@@ -158,12 +169,14 @@ class Client():
 					print("[INFO] No valid moves remaining. Passing the turn")
 					ij = str(ij) + "\n"
 					self.s.send(str(ij).encode("ascii"))
+				print("[INFO] Waiting for opponent")
+				#x=input("Press Enter")
 				ij = self.s.recv(1024).decode("ascii")
 
 				if ij != str(PASS):
 					self.board.updateBoard(ij, self.board.opponentColor)
-					print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
-					print("[INFO] Observing opponent's move")
+					#print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
+					#print("[INFO] Observing opponent's move")
 					# brain.observe(ij)
 					self.board.printBoard()
 				else:
@@ -194,7 +207,7 @@ def main():
 		host = sys.argv[1]
 		port = int(sys.argv[2])
 	except Exception as e:
-		print("[ERROR] Usage:", sys.argv[0], "host port")
+		print("[ERROR] Usage:", sys.argv[0], "IP", "PORT")
 		exit()
 	client = Client(host, port)
 	# Terminates the client gracefully
