@@ -102,7 +102,7 @@ class Serve(threading.Thread):
 						opponentPassed = False
 					#print("[DEBUG] Valid Moves:", validMoves)
 					#ij = validMoves[random.randint(0, len(validMoves) - 1)]
-					print("[INFO] Thinking")
+					print("[INFO] Thinking with Intelligence Level", intelligence)
 					print("[INFO] Creating Tree")
 					brain = AI(self.board, intelligence)
 					print("[INFO] Minimax")

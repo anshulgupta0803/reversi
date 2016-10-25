@@ -13,6 +13,7 @@ from ai import AI
 WHITE = 0
 BLACK = 1
 EMPTY = 2
+EXIT = 3
 # PIECE[WHITE] = "⚪"
 # PIECE[BLACK] = "⏺"
 # PIECE[EMPTY] = "∙"
@@ -36,16 +37,13 @@ class Client():
 	def handshake(self, handshakePacket):
 		self.s.send(handshakePacket.encode("ascii"))
 
-	def run(self):
+	def connect(self):
 		try:
 			self.s.connect((self.host, self.port))
 		except Exception as e:
 			print("[ERROR] Unable to connect to server")
 			exit()
 
-		# msg = self.s.recv(1024).decode("ascii")
-		# print(msg)
-		# Do a handshake
 		print("[INFO] Sending handshake packet")
 		handshakePacket = input("Enter your Handle: ")
 		handshakePacket = handshakePacket + "\n"
@@ -53,31 +51,32 @@ class Client():
 
 		# Wait for color message
 		print("[INFO] Waiting for color message")
-		msg = self.s.recv(1024)
-		print("[INFO]", msg.decode("ascii"))
+		msg = self.s.recv(1024).decode("ascii")
+		print("[INFO]", msg)
+		return msg.strip("\n").split(" ")[1]
 
-		colorChosen = False
-		while not(colorChosen):
-			try:
-				color = msg.decode("ascii").strip("\n").split(" ")[1]
-				if color == "WHITE":
-					myColor = WHITE
-				elif color == "BLACK":
-					myColor = BLACK
-			except Exception as e:
-				print("[WARN] Invalid color")
-				continue
-
-			if myColor == WHITE:
-				print("[INFO] Your color is White (" + PIECE[WHITE] + ")")
-				print("[INFO] Opponents's color is Black (" + PIECE[BLACK] + ")")
-				colorChosen = True
-			elif myColor == BLACK:
-				print("[INFO] Your color is Black (" + PIECE[BLACK] + ")")
-				print("[INFO] Opponents's color is White (" + PIECE[WHITE] + ")")
-				colorChosen = True
+	def run(self, color):
+		try:
+			if color == "WHITE":
+				myColor = WHITE
+			elif color == "BLACK":
+				myColor = BLACK
 			else:
-				print("[WARN] Invalid color")
+				raise
+		except Exception as e:
+			print("[ERROR] Invalid color")
+			exit()
+
+		if myColor == WHITE:
+			print("[INFO] Your color is White (" + PIECE[WHITE] + ")")
+			print("[INFO] Opponents's color is Black (" + PIECE[BLACK] + ")")
+			colorChosen = True
+		elif myColor == BLACK:
+			print("[INFO] Your color is Black (" + PIECE[BLACK] + ")")
+			print("[INFO] Opponents's color is White (" + PIECE[WHITE] + ")")
+			colorChosen = True
+		else:
+			print("[WARN] Invalid color")
 
 		playerTypeChosen = False
 		while not(playerTypeChosen):
@@ -119,8 +118,12 @@ class Client():
 			# White makes the first move
 			if gameInitialized and self.board.myColor == BLACK:
 				print("[INFO] Waiting for opponent")
-				#x=input("Press Enter")
-				ij = self.s.recv(1024).decode("ascii")
+				ij = self.s.recv(1024).decode("ascii").strip("\n")
+				if ij == "START WHITE" or ij == "START BLACK":
+					print("[INFO]", ij)
+					color = ij.split(" ")[1]
+					return color
+
 				self.board.updateBoard(ij, self.board.opponentColor)
 				#print("[DEBUG] Opponent chose i:", ij[:1], "j:", ij[2:])
 				self.board.printBoard()
@@ -140,7 +143,7 @@ class Client():
 					print("[DEBUG] Valid Moves:", validMoves)
 					move = input("Your move (100 to exit): ")
 				elif playerType == COMPUTER:
-					print("[INFO] Thinking")
+					print("[INFO] Thinking with Intelligence Level", intelligence)
 					print("[INFO] Creating Tree")
 					brain = AI(self.board, intelligence)
 					print("[INFO] Minimax")
@@ -170,8 +173,12 @@ class Client():
 					ij = str(ij) + "\n"
 					self.s.send(str(ij).encode("ascii"))
 				print("[INFO] Waiting for opponent")
-				#x=input("Press Enter")
-				ij = self.s.recv(1024).decode("ascii")
+				ij = self.s.recv(1024).decode("ascii").strip("\n")
+
+				if ij == "START WHITE" or ij == "START BLACK":
+					print("[INFO]", ij)
+					color = ij.split(" ")[1]
+					return color
 
 				if ij != str(PASS):
 					self.board.updateBoard(ij, self.board.opponentColor)
@@ -187,6 +194,7 @@ class Client():
 		print("\n[INFO] Fetching final score...")
 		self.board.getFinalScore()
 		self.s.close()
+		return EXIT
 
 def terminate(client, signum, frame):
 	choice = input("\nDo you really want to quit (y/n)? ")
@@ -212,7 +220,11 @@ def main():
 	client = Client(host, port)
 	# Terminates the client gracefully
 	interruptHandler = signal.signal(signal.SIGINT, partial(terminate, client))
-	client.run()
+	color = client.connect()
+	while True:
+		color = client.run(color)
+		if color == EXIT:
+			break
 
 if __name__ == '__main__':
 	main()

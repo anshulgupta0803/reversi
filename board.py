@@ -8,7 +8,7 @@ EMPTY = 2
 # PIECE[WHITE] = "⚪"
 # PIECE[BLACK] = "⏺"
 # PIECE[EMPTY] = "∙"
-PIECE = [u"\u26AA", u"\u23FA", u"\u2219"]
+PIECE = [u"\u26AA", u"\u23FA", " "]#u"\u2219"]
 
 EXIT = 100
 INVALID = -10
@@ -31,6 +31,68 @@ class Board():
 		self.filledSquares = 4
 
 	def printBoard(self):
+		system("clear")
+		print(" ", end="")
+		for i in range(8):
+			print(" ", i, end=" ")
+		print("\n ", end="")
+		print(u"\u250F", end="")
+		for i in range(7):
+			print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u2533", end="")
+		print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u2513", end="")
+		print("")
+		for i in range(8):
+			print(i, end=u"\u2503")
+			for j in range(8):
+				if self.board[i][j] == WHITE:
+					print(" " + PIECE[WHITE] + " ", end="")
+				elif self.board[i][j] == BLACK:
+					print(" " + PIECE[BLACK] + " ", end="")
+				elif self.board[i][j] == EMPTY:
+					print(" " + PIECE[EMPTY] + " ", end="")
+				if (i == 3 or i == 4) and j == 7:
+					print(u"\u2520", end="")
+				else:
+					print(u"\u2503", end="")
+				if i == 3 and j == 7:
+					print(u"\u2500" + u"\u2500" + u"\u2524", "  SCOREBOARD ", u"\u2502", end="")
+				if i == 4 and j == 7:
+					print(u"\u2500" + u"\u2500" + u"\u2524", PIECE[BLACK], end="")
+					if self.myColor == BLACK:
+						print(" (You) :", "%2d " % self.score[BLACK], u"\u2502", end="")
+					else:
+						print("       :", "%2d " % self.score[BLACK], u"\u2502", end="")
+			print("")
+
+			if i != 7:
+				print(" " + u"\u2523", end="")
+				for j in range(7):
+					print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u254B", end="")
+				print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u252B", end="")
+				if i == 2:
+					print("  " + u"\u250C", end="")
+					for i in range(15):
+						print(u"\u2500", end="")
+					print(u"\u2510", end="")
+				if i == 3:
+					print("  " + u"\u2502", PIECE[WHITE], end="")
+					if self.myColor == WHITE:
+						print(" (You) :", "%2d " % self.score[WHITE], u"\u2502", end="")
+					else:
+						print("       :", "%2d " % self.score[WHITE], u"\u2502", end="")
+				if i == 4:
+					print("  " + u"\u2514", end="")
+					for i in range(15):
+						print(u"\u2500", end="")
+					print(u"\u2518", end="")
+			else:
+				print(" " + u"\u2517", end="")
+				for j in range(7):
+					print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u253B", end="")
+				print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u251B", end="")
+			print("")
+
+	def printBoardOld(self):
 		system('clear')
 		#print("\n[INFO] Current board:")
 		print("  ", end="")
@@ -119,9 +181,9 @@ class Board():
 				return EXIT
 			if move == str(PASS):
 				return PASS
-			#validMoves = self.legalMoves()
+			validMoves = self.legalMoves()
 			try:
-				#validMoves.index(move)
+				validMoves.index(move)
 				return move
 			except Exception as e:
 				return INVALID
