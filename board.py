@@ -92,66 +92,6 @@ class Board():
 				print(u"\u2501" + u"\u2501" + u"\u2501" + u"\u251B", end="")
 			print("")
 
-	def printBoardOld(self):
-		system('clear')
-		#print("\n[INFO] Current board:")
-		print("  ", end="")
-		for i in range(8):
-			print(i, end=" ")
-		print("\n ", end="")
-		print(u"\u250F", end="")
-		for i in range(15):
-			print(u"\u2501", end="")
-		print(u"\u2513", end="")
-		print("")
-		for i in range(8):
-			print(i, end=u"\u2503")
-			for j in range(8):
-				if self.board[i][j] == WHITE:
-					print(PIECE[WHITE], end="")
-				elif self.board[i][j] == BLACK:
-					print(PIECE[BLACK], end="")
-				elif self.board[i][j] == EMPTY:
-					print(PIECE[EMPTY], end="")
-				if j == 7:
-					if i == 2 or i == 4:
-						print(u"\u2520", end="")
-					else:
-						print(u"\u2503", end="")
-				else:
-					print(" ", end="")
-				if i == 1 and j == 7:
-					print("  " + u"\u250C", end="")
-					for i in range(15):
-						print(u"\u2500", end="")
-					print(u"\u2510", end="")
-				if i == 2 and j == 7:
-					print(u"\u2500" + u"\u2500" + u"\u2524", "Scoreboard:  ", u"\u2502", end="")
-				if i == 3 and j == 7:
-					print("  " + u"\u2502", PIECE[WHITE], end="")
-					if self.myColor == WHITE:
-						print(" (You)", ":", "%2d " % self.score[WHITE], u"\u2502", end="")
-					else:
-						print(" :", "%2d       " % self.score[WHITE], u"\u2502", end="")
-				if i == 4 and j == 7:
-					print(u"\u2500" + u"\u2500" + u"\u2524", PIECE[BLACK], end="")
-					if self.myColor == BLACK:
-						print(" (You)", ":", "%2d " % self.score[BLACK], u"\u2502", end="")
-					else:
-						print(" :", "%2d       " % self.score[BLACK], u"\u2502", end="")
-				if i == 5 and j == 7:
-					print("  " + u"\u2514", end="")
-					for i in range(15):
-						print(u"\u2500", end="")
-					print(u"\u2518", end="")
-			print("")
-		print(" ", end="")
-		print(u"\u2517", end="")
-		for i in range(15):
-			print(u"\u2501", end="")
-		print(u"\u251B", end="")
-		print("")
-
 	def getFinalScore(self):
 		print("\nScoreboard:")
 		print("White", end="")

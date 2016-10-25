@@ -285,7 +285,7 @@ class AI():
 		if myPieces > opponentPieces:
 			pieceValue = (100 * myPieces) / (myPieces + opponentPieces)
 		elif myPieces < opponentPieces:
-			pieceValue = (-100 * myPieces) / (myPieces + opponentPieces)
+			pieceValue = (-100 * opponentPieces) / (myPieces + opponentPieces)
 		else:
 			pieceValue = 0
 
