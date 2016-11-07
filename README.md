@@ -1,4 +1,4 @@
-# Reversi using Minimax algorithm and Aplha Beta Pruning
+# Reversi using Minimax algorithm and Alpha-Beta Pruning
 Start the server with
 ```sh
 $ ./server.py <IP> <PORT>
