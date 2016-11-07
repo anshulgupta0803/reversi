@@ -3,6 +3,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage[colorlinks=true ,urlcolor=blue,urlbordercolor={0 1 1}]{hyperref}
 
 \begin{document}
 
@@ -44,11 +45,12 @@ This file cannot be executed directly but imported in \texttt{client.py} and \te
 It then evaluates the situation of the game and finds the best possible move for the player using a heuristic function. It optimizes the searching using \textit{Aplha-Beta Pruning}.\\[0.2cm]
 This file also cannot be executed directly but imported in \texttt{client.py} to generate the tree and get the best move.
 
-\begin{figure*}[h]
-\vspace{1cm}
-\centering
-\includegraphics[scale=0.42]{Classes.pdf}
-\end{figure*}
+\begin{figure}[h]
+  \vspace{1cm}
+  \centering
+  \includegraphics[scale=0.42]{Classes.pdf}
+  \caption{Classes Information}
+\end{figure}
 
 \newpage
 \section*{Heuristic Used}
@@ -105,6 +107,35 @@ heuristicValue = (10 * diskSquares)
 		  + (382.026 * cornerClosenessValue)
 		  + (78.922 * mobilityValue)
 \end{verbatim}
+\newpage
+
+\newpage
+\section*{Summary}
+\subsection*{What we learnt}
+\begin{itemize}
+	\item How heuristics work
+	\item Implementing \textit{Minimax} using \textit{Aplha-Beta Pruning} for intelligently exploring the game tree
+	\item Working on \textit{Zero-Sum} games
+	\item Collaborating on Git
+\end{itemize}
+
+\subsection*{Screenshot of UI}
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.45]{UI.png}
+  \caption{User Interface}
+\end{figure}
+
+\subsection*{Code Frequency}
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.45]{Frequency.png}
+  \caption{Addition of Lines of Code}
+\end{figure}
+
+\subsection*{Code Repository}
+The code in completely open source under \textbf{Apache 2.0} license.\\
+\textbf{Repository}: \href{https://github.com/anshulgupta0803/reversi}{https://github.com/anshulgupta0803/reversi}
 \newpage
 
 \end{document}
