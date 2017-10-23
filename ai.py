@@ -18,6 +18,7 @@ PASS = -20
 
 class AI():
 	def __init__(self, currentBoard, depth=4):
+		# tree is a dict of 5 elements. See function getEmptyNode()
 		self.tree = self.getEmptyNode()
 		self.tree["BOARD"] = currentBoard
 		self.depth = depth
@@ -31,19 +32,22 @@ class AI():
 
 	def getEmptyNode(self):
 		tree = {
-			"BOARD": None,
-			"MOVE": None,
-			"NEXTSTATE": list(),
-			"LASTLEVELNODES": list(),
-			"BESTCHILD": None
+			"BOARD": None,				# Stores the board for current node
+			"MOVE": None,				# The move taken from parent to reach the current board
+			"NEXTSTATE": list(),		# Stores the child tree nodes
+			"LASTLEVELNODES": list(),	# Was working on some logic but disabled it. Not in use
+			"BESTCHILD": None			# One of the elements from NEXTSTATE which gives the best heuristicValue
 		}
 		return tree
 
 	def createTree(self, root, level):
+		# Expand the tree in DFT manner.
+		# Breaks when root becomes null or current level exceeds the depth (default is 4)
 		if root == None or level > self.depth:
 			return
 
 		try:
+			# Get the list of validMoves to enumerate the tree. Used in the for loop below
 			validMoves = root["BOARD"].legalMoves()
 		except Exception as e:
 			return
@@ -52,35 +56,44 @@ class AI():
 			return
 
 		#print("LEVEL:", level)
+		# Useless condition. LASTLEVELNODES logic
 		if level == 2:
 			#print("Added", self.count, "nodes in last level nodes for move", root["MOVE"])
 			#self.secondLevelParent = root
 			self.count = 0
 
 		threads = list()
+		# Creates a new node for every possible valid mode
 		for move in validMoves:
 			newNode = self.getEmptyNode()
 
-			#if level < self.depth:
+			# Create a new empty board with myColor
 			clonedBoard = Board(root["BOARD"].myColor)
+			# Copy the current score and filledSquares in the clonedBoard
 			clonedBoard.score[0] = root["BOARD"].score[0]
 			clonedBoard.score[1] = root["BOARD"].score[1]
 			clonedBoard.filledSquares = root["BOARD"].filledSquares
+			# Set the pieces as it is from the currentBoard to the clonedBoard
 			clonedBoard.setState(root["BOARD"].board)
+			# Put the chosen move in the clonedBoard to reach the next state
 			clonedBoard.updateBoard(move, root["BOARD"].myColor)
+			# Now that myColor has made it's move, opponent will make the next move so change it
 			clonedBoard.myColor = 1 - root["BOARD"].myColor
 			clonedBoard.opponentColor = root["BOARD"].myColor
-			#elif level == self.depth:
-			#	clonedBoard = None
 
+			# newNode.BOARD stores the clonedBoard and newNode.MOVE will store the move
 			newNode["BOARD"] = clonedBoard
 			newNode["MOVE"] = move
 
+			# Add newNode as a child of root node
 			root["NEXTSTATE"].append(newNode)
+
+			# LASTLEVELNODES logic. Ignore
 			if level == self.depth:
 				self.count += 1
 				#self.secondLevelParent["LASTLEVELNODES"].append(newNode)
 
+			# Recursive call
 			self.createTree(newNode, level + 1)
 			'''thread = threading.Thread(target=self.createTree, args=(newNode, level + 1))
 			thread.start()
@@ -93,14 +106,18 @@ class AI():
 		if depth == 0 or node["NEXTSTATE"] == None:
 			return self.heuristicValue(node)
 
+		# If myColor is the player, then we should maximize the score
 		if player == self.tree["BOARD"].myColor:		# Maximizer
+			# Set the value to minimum and then start maximizing
 			currentValue = -1 * self.infinity
 			for child in node["NEXTSTATE"]:
+				# If currentValue >= beta, don't evaluate that branch
 				if currentValue < beta:					# Beta Pruning
 					childValue = self.minimax(child, depth - 1, 1 - player, currentValue, beta)
 					if currentValue < childValue:
 						currentValue = childValue
 						node["BESTCHILD"] = child
+		# If opponent is the player, then minimize the score
 		else:											# Minimizer
 			currentValue = self.infinity
 			for child in node["NEXTSTATE"]:
@@ -112,6 +129,7 @@ class AI():
 
 		return currentValue
 
+	# See the documentation for description of heuristics
 	def heuristicValue(self, node):
 		diskSquares, pieceValue, frontierValue = self.pieceCount(node["BOARD"])
 		cornerValue = self.cornerOccupancy(node["BOARD"])
@@ -234,18 +252,20 @@ class AI():
 
 	def pieceCount(self, board):
 		V = list()
-		V.append([20, -3, 11, 8, 8, 11, -3, 20])
-		V.append([-3, -7, -4, 1, 1, -4, -7, -3])
-		V.append([11, -4, 2, 2, 2, 2, -4, 11])
-		V.append([8, 1, 2, -3, -3, 2, 1, 8])
-		V.append([8, 1, 2, -3, -3, 2, 1, 8])
-		V.append([11, -4, 2, 2, 2, 2, -4, 11])
-		V.append([-3, -7, -4, 1, 1, -4, -7, -3])
-		V.append([20, -3, 11, 8, 8, 11, -3, 20])
+		# V is the weight matrix of each cell in 8x8 grid
+		V.append([ 20,  -3,  11,   8,   8,  11,  -3,  20])
+		V.append([ -3,  -7,  -4,   1,   1,  -4,  -7,  -3])
+		V.append([ 11,  -4,   2,   2,   2,   2,  -4,  11])
+		V.append([  8,   1,   2,  -3,  -3,   2,   1,   8])
+		V.append([  8,   1,   2,  -3,  -3,   2,   1,   8])
+		V.append([ 11,  -4,   2,   2,   2,   2,  -4,  11])
+		V.append([ -3,  -7,  -4,   1,   1,  -4,  -7,  -3])
+		V.append([ 20,  -3,  11,   8,   8,  11,  -3,  20])
 
-		neighbor = [	(-1, -1),	(0, -1)	,	(1, -1),
-						(-1, 0),				(1, 0),
-						(-1, 1),	(0, 1),		(1, 1)	]
+		# Coordinate of neighbor  cells
+		neighbor = [	(-1, -1), ( 0, -1), ( 1, -1),
+						(-1,  0),         , ( 1,  0),
+						(-1,  1), ( 0,  1), ( 1,  1)]
 
 		#
 		myPieces = 0
@@ -292,15 +312,19 @@ class AI():
 		return (diskSquares, pieceValue, frontierValue)
 
 	def think(self):
+		# Call minimax
 		self.minimax(self.tree, self.depth, self.tree["BOARD"].myColor, -1 * self.infinity, self.infinity)
 		try:
+			# Get bestMove
 			self.bestMove = self.tree["BESTCHILD"]["MOVE"]
 		except Exception as e:
 			print("Best Child is None")
+			# If bestMove is None, then give the first legal move as the bestMove
 			self.bestMove = self.tree["BOARD"].legalMoves()[0]
 
 		self.tree = self.tree["BESTCHILD"]
 
+	# LASTLEVELNODES logic. Ignore
 	def observe(self, opponentMove):
 		for child in self.tree["NEXTSTATE"]:
 			if child["MOVE"] == opponentMove.strip("\n"):
@@ -314,6 +338,7 @@ class AI():
 	def getMove(self):
 		return self.bestMove
 
+	# Print the tree using BFT. Used for debugging purpose
 	def printTree(self):
 		queue = [self.tree]
 		while len(queue) != 0:

@@ -8,7 +8,8 @@ EMPTY = 2
 # PIECE[WHITE] = "⚪"
 # PIECE[BLACK] = "⏺"
 # PIECE[EMPTY] = "∙"
-PIECE = [u"\u26AA", u"\u23FA", " "]#u"\u2219"]
+# PIECE = [u"\u26AA", u"\u23FA", " "]#u"\u2219"]
+PIECE = ["x", "o", " "]
 
 EXIT = 100
 INVALID = -10
@@ -115,14 +116,16 @@ class Board():
 		else:
 			return False
 
+	# Move is of length 3. It can take "i j" as a move, 100 for EXIT, -10 for INVALID and -20 for PASS
 	def validateMove(self, move):
 		if len(move) == 3:
-			if move == str(EXIT):
+			if move == str(EXIT):		# See global value on line 14
 				return EXIT
 			if move == str(PASS):
 				return PASS
 			validMoves = self.legalMoves()
 			try:
+				# If move in present in validMoves, then return move otherwise return INVALID
 				validMoves.index(move)
 				return move
 			except Exception as e:
@@ -130,6 +133,7 @@ class Board():
 		else:
 			return INVALID
 
+	# Get all the legal moves in vertical, horizontal, diagonal and anti-diagonal direction
 	def legalMoves(self):
 		moves = list()
 		for i in range(8):
@@ -277,6 +281,7 @@ class Board():
 							break
 		return moves
 
+	# If a move is made by a player, capture all possible pieces by that move
 	def updateBoard(self, move, color):
 		i = int(move[:1])
 		j = int(move[2:])

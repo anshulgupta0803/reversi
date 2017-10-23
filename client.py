@@ -44,18 +44,22 @@ class Client():
 			print("[ERROR] Unable to connect to server")
 			exit()
 
+		# Handle can be any string.
 		print("[INFO] Sending handshake packet")
 		handshakePacket = input("Enter your Handle: ")
 		handshakePacket = handshakePacket + "\n"
 		self.handshake(handshakePacket)
 
 		# Wait for color message
+		# Server sends a string: START WHITE or START BLACK
 		print("[INFO] Waiting for color message")
 		msg = self.s.recv(1024).decode("ascii")
 		print("[INFO]", msg)
+		# Return WHITE or BLACK depending on the string received from server
 		return msg.strip("\n").split(" ")[1]
 
 	def run(self, color):
+		# Initialization stuff begins here
 		try:
 			if color == "WHITE":
 				myColor = WHITE
@@ -112,10 +116,13 @@ class Client():
 		self.gameActive = True
 		self.board.printBoard()
 		opponentPassed = False
+		# Initialization stuff ends here
 
 		validMoves = self.board.legalMoves()
+		# Game ends when either board is full or both players are out of moves
+		# Out of move condition is when opponent has passed and the current player has no moves left
 		while not(self.board.isBoardFull() or (opponentPassed and len(validMoves) == 0)):
-			# White makes the first move
+			# White makes the first move so wait for opponent if myColor is BLACK
 			if gameInitialized and self.board.myColor == BLACK:
 				print("[INFO] Waiting for opponent")
 				ij = self.s.recv(1024).decode("ascii").strip("\n")
@@ -130,10 +137,12 @@ class Client():
 				validMoves = self.board.legalMoves()
 
 			if gameInitialized and playerType == COMPUTER:
+				# Initialize AI
 				brain = AI(self.board, intelligence)
 				gameInitialized = False
 
 			if len(validMoves) == 0:
+				# If we are out of move, then pass
 				move = str(PASS)
 			else:
 				if opponentPassed:
@@ -150,6 +159,7 @@ class Client():
 					brain.think()
 					move = brain.getMove()
 
+			# This ij will store the move that we will play
 			ij = self.board.validateMove(move)
 
 			if ij == EXIT:
@@ -161,6 +171,7 @@ class Client():
 				continue
 			else:
 				if ij != PASS:
+					# Update the board with the best move and send that move to the opponenet
 					self.board.updateBoard(ij, self.board.myColor)
 					ij = ij + "\n"
 					self.s.send(ij.encode("ascii"))
@@ -172,9 +183,12 @@ class Client():
 					print("[INFO] No valid moves remaining. Passing the turn")
 					ij = str(ij) + "\n"
 					self.s.send(str(ij).encode("ascii"))
+
 				print("[INFO] Waiting for opponent")
+				# This ij will store the opponent's move
 				ij = self.s.recv(1024).decode("ascii").strip("\n")
 
+				# Ignore this
 				if ij == "START WHITE" or ij == "START BLACK":
 					print("[INFO]", ij)
 					color = ij.split(" ")[1]
@@ -211,15 +225,22 @@ def terminate(client, signum, frame):
 		pass
 
 def main():
+	# Get IP and PORT from user
 	try:
 		host = sys.argv[1]
 		port = int(sys.argv[2])
 	except Exception as e:
+		# Exception when there is error in input from user
 		print("[ERROR] Usage:", sys.argv[0], "IP", "PORT")
 		exit()
+
+	# Initialize client with host and port
 	client = Client(host, port)
+
 	# Terminates the client gracefully
 	interruptHandler = signal.signal(signal.SIGINT, partial(terminate, client))
+
+	# Connect to the server and server will assign a color to client
 	color = client.connect()
 	while True:
 		color = client.run(color)
